@@ -19,7 +19,7 @@ int send_file(FILE *fp, int sender_socket){
 
     while (fgets(data, length ,fp))//can be change to SIZE.
     {
-        if(send(sender_socket,data,sizeof(data),0)==-1){
+        if(send(sender_socket,data,length/2,0)==-1){
             perror("error in sending data.\n");
             exit(1);
         }
