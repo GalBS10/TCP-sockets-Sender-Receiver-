@@ -6,9 +6,12 @@
 #include "stdlib.h"
 #include "unistd.h"
 #include "netinet/in.h"
+#include "netinet/tcp.h"
 #define SIZE 1048576
 
 int send_file(FILE *fp, int sender_socket){
+
+    char *Reno = "reno";
 
     char data [SIZE]={0};//We have has been asked for 1MB file size. Therefore, we need 1024KB and 1KB=1024B. Furtheremore each char is 8B. 
     size_t position = ftell(fp);//current position
@@ -17,25 +20,30 @@ int send_file(FILE *fp, int sender_socket){
     fseek(fp,position,SEEK_SET);//restore original position
 
 
-    while (fgets(data, length ,fp))//can be change to SIZE.
+    while (fgets(data, length ,fp))
     {
         if(send(sender_socket,data,length/2,0)==-1){
             perror("error in sending data.\n");
             exit(1);
         }
-        if(send(sender_socket,&data[(length/2)+1],sizeof(data),0)==-1){
+
+        //return xor approval.
+
+        socklen_t Reno_len = strlen(Reno);
+        if (setsockopt(sender_socket, IPPROTO_TCP,TCP_CONGESTION,Reno,Reno_len) != 0)//the change in CC from Cubic to Reno
+        {
+        perror("setsockopt");
+        return -1;
+        }
+
+        if(send(sender_socket,&data[(length/2)],sizeof(data),0)==-1){
             perror("error in sending data.\n");
             exit(1);
         }
+
        bzero(data,SIZE);
        
     }
-    //printf("-%d \n",count);
-   // bzero(data,length/2);
-   // while (fgets(data, length ,fp))
-    //{
-      //  bzero(data,SIZE);
-   // }
     
     return 0;
 }
@@ -43,7 +51,7 @@ int send_file(FILE *fp, int sender_socket){
 int main(){
     //creating a socket
     int sender_socket;
-    sender_socket=socket(AF_INET, SOCK_STREAM, 0);
+    sender_socket=socket(AF_INET, SOCK_STREAM, 0);//because we are in linux the default cc is cubic.
     if(sender_socket==-1){
         printf("there is a problem with initializing sender.\n");
     }
