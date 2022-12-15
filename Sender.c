@@ -7,11 +7,17 @@
 #include "unistd.h"
 #include "netinet/in.h"
 #include "netinet/tcp.h"
-#define SIZE 1048576
+#define SIZE 1048576*2 //for 2MB
+#define xor "1100010100100100"       //   5    2    3    0
+                                     // 0101 0010 0011 0000
+                                     //xor
+                                     //   9    7    1    4
+                                     // 1001 0111 0001 0100
+                                     //----------------------
+                                     // 1100 0101 0010 0100
 
 int send_file(FILE *fp, int sender_socket){
 
-    char *Reno = "reno";
 
     char data [SIZE]={0};//We have has been asked for 1MB file size. Therefore, we need 1024KB and 1KB=1024B. Furtheremore each char is 8B. 
     size_t position = ftell(fp);//current position
@@ -26,27 +32,34 @@ int send_file(FILE *fp, int sender_socket){
             perror("error in sending data.\n");
             exit(1);
         }
-
-        //return xor approval.
-
-        socklen_t Reno_len = strlen(Reno);
-        if (setsockopt(sender_socket, IPPROTO_TCP,TCP_CONGESTION,Reno,Reno_len) != 0)//the change in CC from Cubic to Reno
-        {
-        perror("setsockopt");
-        return -1;
-        }
-
-        if(send(sender_socket,&data[(length/2)],sizeof(data),0)==-1){
-            perror("error in sending data.\n");
-            exit(1);
-        }
-
-       bzero(data,SIZE);
-       
+         bzero(data,SIZE);
     }
+       return 0;
+}
+        
+    int send_file2(FILE *fp, int sender_socket){
+
+
+        char data [SIZE]={0};//We have has been asked for 1MB file size. Therefore, we need 1024KB and 1KB=1024B. Furtheremore each char is 8B. 
+        size_t position = ftell(fp);//current position
+        fseek(fp,0,SEEK_END);//Go to end
+        size_t length = ftell(fp);//the position is the size
+        fseek(fp,position,SEEK_SET);//restore original position
+
+
+         while (fgets(data, length ,fp))
+        {
+             if(send(sender_socket,&data[(length/2)],sizeof(data),0)==-1){
+             perror("error in sending data.\n");
+             exit(1);
+                         }
+
+            bzero(data,SIZE);
+       
+        }
     
     return 0;
-}
+}           
 
 int main(){
     //creating a socket
@@ -74,7 +87,7 @@ if(connection_status==-1){
 else{
 printf("-connected.\n");
 }
-//char server_response[256];
+//char server_response[33];
 //recv(sender_socket,&server_response, sizeof(server_response),0);
 
 //printf("The server sent the data: %s .\n", server_response);
@@ -87,8 +100,32 @@ if(fp==NULL){
 
 
 if(send_file(fp,sender_socket)==0){
-printf("-File data has been send successfully.\n");
+printf("-File data has been send successfully1.\n");
 }
+char server_response[33];
+recv(sender_socket,&server_response, sizeof(server_response),0);
+printf("The server sent the data: %s .\n", server_response);
+if(!strcmp(xor,server_response))
+{
+    char *Reno = "reno";
+    socklen_t Reno_len = strlen(Reno);
+    if (setsockopt(sender_socket, IPPROTO_TCP,TCP_CONGESTION,Reno,Reno_len) != 0)//the change in CC from Cubic to Reno
+    {
+        perror("setsockopt");
+        exit(1);
+    }
+    else{
+        printf("-CC has changed.\n");
+    }
+    if(send_file2(fp,sender_socket)==0){
+        printf("-File data has been send successfully2.\n");
+    }
+}
+else{
+    perror("-The xor didn't make it.\n");
+    //exit(1);
+}
+
 
 close(sender_socket);
 printf("-closing...\n");
