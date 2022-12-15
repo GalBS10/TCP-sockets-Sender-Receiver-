@@ -16,35 +16,25 @@
                                      //----------------------
                                      // 1100 0101 0010 0100
 
-    int send_file(FILE *fp, int sender_socket){
-        char data [SIZE/2]={0};
-        printf("fread=%ld\n",fread(data,sizeof(char),SIZE/2,fp));
-            size_t a;
-        //fgets(data, SIZE/2 ,fp);
-        
+    int send_file(char *data, int sender_socket){
+        size_t a;
         if((a=send(sender_socket,data,SIZE/2,0))==-1){
         perror("error in sending data.\n");
         exit(1);
         }
-         bzero(data,SIZE/2);
-        
-         printf("a=%ld\n",a);
+        bzero(data,SIZE/2);
+        printf("a=%ld\n",a);
         return 0;
     }
 
-    int send_file2(FILE *fp, int sender_socket){
-        char data [SIZE]={0};
-        printf("fread=%ld\n",fread(data,sizeof(char),SIZE,fp));
-            size_t b;
-        //fgets(data, SIZE/2 ,fp);
-        
+    int send_file2(char *data, int sender_socket){
+        size_t b;
         if((b=send(sender_socket,&data[SIZE/2],SIZE/2,0))==-1){
         perror("error in sending data.\n");
         exit(1);
         }
-         bzero(data,SIZE/2);
-        
-         printf("b=%ld\n",b);
+        bzero(data,SIZE/2);
+        printf("b=%ld\n",b);
         return 0;
     }
 
@@ -82,8 +72,17 @@ if(fp==NULL){
     exit(1);
 }
 
+char data [SIZE]={0};//mooving text into array
+printf("fread = %ld\n",fread(data,sizeof(char),SIZE,fp));
 
-if(send_file(fp,sender_socket)==0){
+char decision='1';
+while(decision){
+    if(!decision){
+        close(sender_socket);
+        printf("-closing...\n");
+    }
+
+if(send_file(data,sender_socket)==0){
 printf("-File data has been send successfully1.\n");
 }
 char server_response[33];
@@ -101,13 +100,17 @@ if(!strcmp(xor,server_response))
     else{
         printf("-CC has changed.\n");
     }
-     if(send_file2(fp,sender_socket)==0){
+     if(send_file2(data,sender_socket)==0){
         printf("-File data has been send successfully2.\n");
     }
 }
 else{
     perror("-The xor didn't make it.\n");
     exit(1);
+}
+printf("1 or 0\n");
+decision= (int)getchar();
+printf("%d",decision);
 }
 
 
@@ -116,54 +119,3 @@ printf("-closing...\n");
 
 return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*int main(){
-struct in_addr{
-    size_t big_endian;
-};
-Receiver_address.sin_family=AF_INET;
-Receiver_address.sin_port=htons(AF_INET);
-int socket(int AF,int type , int protocol);//kind of constructor for the socket
-int sender_socket;
-sender_socket= socket(AF_INET, SOCK_STREAM, 0);//generate new socket named sockfd
-#ifdef sockfd<=0 
-printf("somthing went wrong with initializing...");
-#endif
-int connect (int sender_socket, const struct sockaddr *serv_addr, socklen_t addrlen);//a func that connect between the sender and the reciever
-int connection_status = 
-#ifdef connection_status<=0
-printf("there is a problem with the connection");
-#endif
-void memset(void *str,int c, size_t n);//delete the n first charactars and replace them in c
-struct sockaddr_in sa;
-inet_pton(int af, , *int);//this func cast the addr into binary represent. bad={-1,0} good={k>0}.
-return 0;
-}*/

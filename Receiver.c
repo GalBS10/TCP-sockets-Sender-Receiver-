@@ -28,8 +28,8 @@ int write_file1(int socket,char *data){// func that allows us to write in files
         }
         sum=sum+size;
         fprintf(f,"%s",data);
-        bzero(data, SIZE/2);//like memset- delete the first n characters in thr String.
     }
+        bzero(data, SIZE/2);//like memset- delete the first n characters in thr String.
         printf("sum=%ld\n",sum);
 
     return 0;
@@ -53,8 +53,8 @@ int write_file2(int socket,char *data){// func that allows us to write in files
         }
         sum=sum+size;
         fprintf(f,"%s",&data[SIZE/2]);
-        bzero(data, SIZE);//like memset- delete the first n characters in thr String.
     }
+        bzero(data, SIZE);//like memset- delete the first n characters in thr String.
         printf("sum=%ld\n",sum);
 
     return 0;
@@ -92,45 +92,20 @@ int main(){
     int client_socket;
     socklen_t addr_size=sizeof(new_addr);
     client_socket= accept(receiver_socket,(struct sockaddr*)&new_addr, &addr_size);
-    char *data[SIZE];
+    while(1){
+    char data[SIZE];
 
     write_file1(client_socket,data);
     printf("-writing data in the txt file (first).\n");
+    
     //if(we got all the bytes)
     printf("amount of bit sended by send is %ld.\n",send(client_socket, Receiver_massege,sizeof(Receiver_massege),0));
 
     write_file2(client_socket,data);
     printf("-writing data in the txt file (second).\n");
-
+    }
     close(receiver_socket);
     printf("-closing..\n");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   // int yes=1; 
-    //if (setsockopt(receiver_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1){ 
-	  //  perror("setsockopt"); 
-	    //exit(1);
-          //      }
-   // char Sender_massege[256];
-    //recv(receiver_socket,&Sender_massege,sizeof(Sender_massege),0);
-    
-
+return 0;
 }
