@@ -76,46 +76,76 @@ char data [SIZE]={0};//mooving text into array
 printf("fread = %ld\n",fread(data,sizeof(char),SIZE,fp));
 
 char decision='1';
-while(decision){
-    if(!decision){
-        close(sender_socket);
-        printf("-closing...\n");
-    }
+while(decision!='0'){
 
-if(send_file(data,sender_socket)==0){
-printf("-File data has been send successfully1.\n");
-}
-char server_response[33];
-recv(sender_socket,&server_response, sizeof(server_response),0);
-printf("The server sent the data: %s .\n", server_response);
-if(!strcmp(xor,server_response))
-{
-    char *Reno = "reno";
-    socklen_t Reno_len = strlen(Reno);
-    if (setsockopt(sender_socket, IPPROTO_TCP,TCP_CONGESTION,Reno,Reno_len) != 0)//the change in CC from Cubic to Reno
+    if(send_file(data,sender_socket)==0){
+    printf("-File data has been send successfully1.\n");
+    }
+    char server_response[33];
+    recv(sender_socket,&server_response, sizeof(server_response),0);
+    printf("The server sent the data: %s .\n", server_response);
+    if(!strcmp(xor,server_response))
     {
-        perror("setsockopt");
-        exit(1);
+        char *Reno = "reno";
+        socklen_t Reno_len = strlen(Reno);
+        if (setsockopt(sender_socket, IPPROTO_TCP,TCP_CONGESTION,Reno,Reno_len) != 0)//the change in CC from Cubic to Reno
+        {
+            perror("setsockopt");
+            exit(1);
+        }
+        else{
+            printf("-CC has changed Cubic -> Reno.\n");
+        }
+        if(send_file2(data,sender_socket)==0){
+            printf("-File data has been send successfully2.\n");
+        }
     }
     else{
-        printf("-CC has changed.\n");
+        perror("-The xor didn't make it.\n");
+        exit(1);
     }
-     if(send_file2(data,sender_socket)==0){
-        printf("-File data has been send successfully2.\n");
-    }
+bzero(server_response,33);
+//printf("1 or 0\n");
+//decision= (int)getchar();
+//scanf("1 or 0 %d\n",&decision);
+//printf("%d\n",decision);
+decision = getchar();
+if(decision=='0'){//we don't want to keep sending the file again. 
+    /*
+    int check;
+    char* end = "bye bye";
+    if((check=send(sender_socket,end,sizeof(end),0))==-1){
+        perror("error in sending end.\n");
+        exit(1);
+        }
+    */
+    close(sender_socket);
+    printf("-closing...\n");
+    break;
 }
+//printf("%c\n",decision);
+else{//want to continue.
+    int check;
+    char* notend = "continue";
+    if((check=send(sender_socket,notend,sizeof(notend),0))==-1){
+        perror("error in sending end.\n");
+        exit(1);
+        }
+
+char *Cubic = "cubic";
+socklen_t Cubic_len = strlen(Cubic);
+if (setsockopt(sender_socket, IPPROTO_TCP,TCP_CONGESTION,Cubic,Cubic_len) != 0)//the change in CC from Reno to Cubic
+        {
+            perror("setsockopt");
+            exit(1);
+        }
 else{
-    perror("-The xor didn't make it.\n");
-    exit(1);
-}
-printf("1 or 0\n");
-decision= (int)getchar();
-printf("%d",decision);
+            printf("-CC has changed Reno -> Cubic.\n");
+        }
 }
 
-
-close(sender_socket);
-printf("-closing...\n");
+}
+//close(sender_socket);
 
 return 0;
 }

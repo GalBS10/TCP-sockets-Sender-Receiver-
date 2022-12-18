@@ -7,6 +7,7 @@
 #include "stdlib.h"
 #include "unistd.h"
 #include "netinet/in.h"
+#include "netinet/tcp.h"
 #define SIZE 1048576*2
 #define xor "1100010100100100" 
 
@@ -92,20 +93,41 @@ int main(){
     int client_socket;
     socklen_t addr_size=sizeof(new_addr);
     client_socket= accept(receiver_socket,(struct sockaddr*)&new_addr, &addr_size);
-    while(1){
+    
     char data[SIZE];
-
-    write_file1(client_socket,data);
-    printf("-writing data in the txt file (first).\n");
+    while(1){
+        write_file1(client_socket,data);
+        printf("-writing data in the txt file (first).\n");
     
     //if(we got all the bytes)
-    printf("amount of bit sended by send is %ld.\n",send(client_socket, Receiver_massege,sizeof(Receiver_massege),0));
+        printf("amount of bit sended by send is %ld.\n",send(client_socket, Receiver_massege,sizeof(Receiver_massege),0));
+        char *Reno = "reno";
+        socklen_t Reno_len = strlen(Reno);
+            if (setsockopt(client_socket, IPPROTO_TCP,TCP_CONGESTION,Reno,Reno_len) != 0)//the change in CC from Cubic to Reno
+            {
+                perror("setsockopt");
+                exit(1);
+            }
+            else{
+                printf("-CC has changed.\n");
+            }
 
-    write_file2(client_socket,data);
-    printf("-writing data in the txt file (second).\n");
+        write_file2(client_socket,data);
+        printf("-writing data in the txt file (second).\n");
+
+        char end[9] = {0};  
+        if(recv(client_socket,end, sizeof(end),0) == 0){
+    //  printf("recv = %ld\n",recv(client_socket,&end, sizeof(end),0));
+            close(receiver_socket);
+            printf("-closing..\n");
+            break;
+        }
+        else{
+           printf("we continue\n");
+           bzero(end,sizeof(end));
+        }  
+
     }
-    close(receiver_socket);
-    printf("-closing..\n");
 
 return 0;
 }
