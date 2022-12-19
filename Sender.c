@@ -17,6 +17,7 @@
                                      // 1100 0101 0010 0100
 
     int send_file(char *data, int sender_socket){
+        printf("----------in send_file-----------\n");
         size_t a;
         if((a=send(sender_socket,data,SIZE/2,0))==-1){
         perror("error in sending data.\n");
@@ -24,10 +25,12 @@
         }
         bzero(data,SIZE/2);
         printf("a=%ld\n",a);
+         printf("----------out send_file-----------\n");
         return 0;
     }
 
     int send_file2(char *data, int sender_socket){
+         printf("----------in send_file2-----------\n");
         size_t b;
         if((b=send(sender_socket,&data[SIZE/2],SIZE/2,0))==-1){
         perror("error in sending data.\n");
@@ -35,6 +38,7 @@
         }
         bzero(data,SIZE/2);
         printf("b=%ld\n",b);
+         printf("----------out send_file-----------\n");
         return 0;
     }
 
@@ -80,11 +84,13 @@ while(decision!='0'){
 
     if(send_file(data,sender_socket)==0){
     printf("-File data has been send successfully1.\n");
+    printf("hi1");
     }
+    printf("hi2");
     char server_response[33];
     recv(sender_socket,&server_response, sizeof(server_response),0);
     printf("The server sent the data: %s .\n", server_response);
-    if(!strcmp(xor,server_response))
+    if(!strcmp(xor,server_response))//if the Receiver send the right authoratative
     {
         char *Reno = "reno";
         socklen_t Reno_len = strlen(Reno);

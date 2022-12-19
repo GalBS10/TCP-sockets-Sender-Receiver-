@@ -12,26 +12,36 @@
 #define xor "1100010100100100" 
 
 int write_file1(int socket,char *data){// func that allows us to write in files
+    printf("1");
     FILE *f;
+    printf("1");
     char *filename= "Receiver_massege.txt";
-
+    printf("1");
     f = fopen(filename,"w");
+    printf("1");
     if(f==NULL){
+        printf("1");
         perror("-Creating file error");
+        printf("1");
         exit(1);
     }
+    printf("2");
     size_t size=0;
     size_t sum=0;
     while(sum<SIZE/2){
+        printf("2");
         if((size=recv(socket,data,SIZE/2,0))<=0)
         {
+            printf("2");
             break;
         }
+        printf("2");
         sum=sum+size;
         fprintf(f,"%s",data);
     }
-        bzero(data, SIZE/2);//like memset- delete the first n characters in thr String.
-        printf("sum=%ld\n",sum);
+    printf("3");
+    bzero(data, SIZE/2);//like memset- delete the first n characters in thr String.
+    printf("sum=%ld\n",sum);
 
     return 0;
 }
@@ -96,6 +106,7 @@ int main(){
     
     char data[SIZE];
     while(1){
+        printf("!start of loop!\n");
         write_file1(client_socket,data);
         printf("-writing data in the txt file (first).\n");
     
@@ -115,16 +126,17 @@ int main(){
         write_file2(client_socket,data);
         printf("-writing data in the txt file (second).\n");
 
-        char end[9] = {0};  
+        char end[SIZE] = {0};  
         if(recv(client_socket,end, sizeof(end),0) == 0){
-    //  printf("recv = %ld\n",recv(client_socket,&end, sizeof(end),0));
             close(receiver_socket);
             printf("-closing..\n");
             break;
         }
         else{
-           printf("we continue\n");
-           bzero(end,sizeof(end));
+            printf("recv = %ld\n",recv(client_socket,end, sizeof(end),0));
+            //printf("end = %s\n",end);
+            printf("-------------------------we continue---------------------------\n");
+            bzero(end,sizeof(end));
         }  
 
     }
